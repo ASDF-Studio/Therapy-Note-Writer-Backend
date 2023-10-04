@@ -1,0 +1,4 @@
+
+Mongo DB: admin@therapynotewriter.com
+To launch server, run: "node server.js" from terminal
+To launch app, run: "cd client" then "npm start" from terminal

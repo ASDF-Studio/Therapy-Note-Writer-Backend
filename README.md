@@ -1,1 +1,3 @@
-# Therapy-Note-Writer-Backend
+# UdemySaaSPublic
+ Public repo of Udemy Saas AI Course
+# TNW
