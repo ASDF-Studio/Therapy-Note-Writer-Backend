@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "start": "nodemon server.js",
     "build": "npm install && cd client && npm install && npm run build"
   },
   "repository": {
@@ -33,6 +34,7 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.8.2",
+    "nodemon": "^3.0.1",
     "openai": "^3.2.1",
     "react-router-dom": "^6.9.0",
     "stripe": "^11.18.0"

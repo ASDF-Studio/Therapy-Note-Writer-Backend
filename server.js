@@ -17,15 +17,15 @@ const User = require('./models/User'); // Replace with the path to your User mod
 
 const app = express();
 
-mongoose.set('strictQuery', true);
-mongoose.connect(
-  process.env.APPSETTING_MONGO_URI,
-  { useNewUrlParser: true, useUnifiedTopology: true },
-  (err) => {
-    if (err) throw err;
-    console.log('Connected to MongoDB!!!');
-  }
-);
+// mongoose.set('strictQuery', true);
+// mongoose.connect(
+//   process.env.APPSETTING_MONGO_URI,
+//   { useNewUrlParser: true, useUnifiedTopology: true },
+//   (err) => {
+//     if (err) throw err;
+//     console.log('Connected to MongoDB!!!');
+//   }
+// );
 
 var rawBodySaver = function (req, res, buf, encoding) {
   if (buf && buf.length) {
