@@ -1,8 +1,4 @@
 require('dotenv').config({ path: './config.env' });
-const applicationInsights = require('applicationinsights');
-applicationInsights
-  .setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
-  .start();
 
 const express = require('express');
 const cors = require('cors');
@@ -28,20 +24,20 @@ const app = express();
 // );
 
 var rawBodySaver = function (req, res, buf, encoding) {
-  if (buf && buf.length) {
-    req.rawBody = buf.toString(encoding || 'utf8');
-  }
+    if (buf && buf.length) {
+        req.rawBody = buf.toString(encoding || 'utf8');
+    }
 };
 
 app.use(
-  cors({
-    origin: 'http://localhost:3000', // replace with your client app URL
-    methods: ['GET', 'POST', 'OPTIONS'], // allow OPTIONS method for preflight requests
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // allow cookies to be sent with requests from the client
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  })
+    cors({
+        origin: 'http://localhost:3000', // replace with your client app URL
+        methods: ['GET', 'POST', 'OPTIONS'], // allow OPTIONS method for preflight requests
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: true, // allow cookies to be sent with requests from the client
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+    })
 );
 app.use(cookieParser());
 app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
@@ -55,55 +51,61 @@ app.use('/api/stripe', require('./routes/stripe'));
 const endpointSecret = process.env.APPSETTING_STRIPE_WEBHOOK_SECRET;
 
 app.post(
-  '/api/stripe/webhook',
-  express.raw({ type: 'application/json' }),
-  async (request, response) => {
-    const sig = request.headers['stripe-signature'];
+    '/api/stripe/webhook',
+    express.raw({ type: 'application/json' }),
+    async (request, response) => {
+        const sig = request.headers['stripe-signature'];
 
-    let event;
+        let event;
 
-    try {
-      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-    } catch (err) {
-      response.status(400).send(`Webhook Error: ${err.message}`);
-      return;
-    }
-
-    // Log the entire event object
-    console.log(event);
-
-    // Handle the event
-    switch (event.type) {
-      case 'checkout.session.completed':
-        const session = event.data.object;
-
-        // Extract the necessary data
-        const customerEmail = session.customer_details.email; // Modify as per your webhook data structure
-        const subscriptionId = session.subscription; // Modify as per your webhook data structure
-
-        // Find the user in your database
-        const user = await User.findOne({ email: customerEmail });
-
-        if (!user) {
-          console.error(`User with email ${customerEmail} not found.`);
-          break;
+        try {
+            event = stripe.webhooks.constructEvent(
+                request.body,
+                sig,
+                endpointSecret
+            );
+        } catch (err) {
+            response.status(400).send(`Webhook Error: ${err.message}`);
+            return;
         }
 
-        // Update the user with the subscriptionId
-        user.stripeSubscriptionId = subscriptionId; // Replace 'stripeSubscriptionId' with the field in your User model where you want to store the subscription id
-        await user.save();
+        // Log the entire event object
+        console.log(event);
 
-        console.log(
-          `User with email ${customerEmail} subscribed with id ${subscriptionId}.`
-        );
-        break;
-      default:
-        console.log(`Unhandled event type ${event.type}`);
+        // Handle the event
+        switch (event.type) {
+            case 'checkout.session.completed':
+                const session = event.data.object;
+
+                // Extract the necessary data
+                const customerEmail = session.customer_details.email; // Modify as per your webhook data structure
+                const subscriptionId = session.subscription; // Modify as per your webhook data structure
+
+                // Find the user in your database
+                const user = await User.findOne({ email: customerEmail });
+
+                if (!user) {
+                    console.error(
+                        `User with email ${customerEmail} not found.`
+                    );
+                    break;
+                }
+
+                // Update the user with the subscriptionId
+                user.stripeSubscriptionId = subscriptionId; // Replace 'stripeSubscriptionId' with the field in your User model where you want to store the subscription id
+                await user.save();
+
+                console.log(
+                    `User with email ${customerEmail} subscribed with id ${subscriptionId}.`
+                );
+                break;
+            default:
+                console.log(`Unhandled event type ${event.type}`);
+        }
+
+        // Return a 200 response to acknowledge receipt of the event
+        response.send();
     }
-
-    // Return a 200 response to acknowledge receipt of the event
-    response.send();
-  }
 );
 
 // Use the errorHandler middleware after the routes
@@ -112,14 +114,14 @@ app.use(errorHandler);
 const port = process.env.PORT || 4242;
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port ${port}`);
 });
 
 const node_env = process.env.APPSETTING_NODE_ENV;
 
 if (node_env === 'production') {
-  app.use(express.static('./client/build'));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
-  });
+    app.use(express.static('./client/build'));
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    });
 }
