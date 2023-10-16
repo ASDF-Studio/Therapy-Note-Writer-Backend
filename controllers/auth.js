@@ -49,7 +49,8 @@ exports.login = async (req, res, next) => {
             return next(new ErrorResponse('Invalid credentials', 401));
         }
 
-        sendToken(user, 200, res);
+        // sendToken(user, 200, res);
+        res.status(200).json({ user: user });
     } catch (err) {
         console.error('Error during login:', err); // Log the error
         next(err);
