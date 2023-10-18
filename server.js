@@ -118,6 +118,13 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
+app.get('/', function (req, res) {
+    return res.status(200).send({
+        messsage: 'everything is working fine.',
+        host: req.get('host'),
+    });
+});
+
 const node_env = process.env.APPSETTING_NODE_ENV;
 
 if (node_env === 'production') {
