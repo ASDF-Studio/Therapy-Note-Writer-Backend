@@ -32,7 +32,7 @@ let rawBodySaver = function (req, res, buf, encoding) {
 
 app.use(
     cors({
-        origin: 'http://localhost:3000', // replace with your client app URL
+        origin: process.env.APPSETTING_CLIENT_URL, // replace with your client app URL
         methods: ['GET', 'POST', 'OPTIONS'], // allow OPTIONS method for preflight requests
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true, // allow cookies to be sent with requests from the client
@@ -40,6 +40,24 @@ app.use(
         optionsSuccessStatus: 204,
     })
 );
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    );
+    if (req.method == 'OPTIONS') {
+        res.header(
+            'Access-Control-Allow-Methods',
+            'PUT, POST, PATCH, DELETE, GET'
+        );
+        return res.status(200).json({});
+    }
+
+    next();
+});
+
 app.use(cookieParser());
 app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
