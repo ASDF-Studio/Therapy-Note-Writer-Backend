@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Click = require('../models/click');
 const ErrorResponse = require('../utils/errorResponse');
 const jwt = require('jsonwebtoken');
 
@@ -99,6 +100,22 @@ exports.getCustomer = async (req, res, next) => {
         const user = await User.findById(req.user.id);
         res.status(200).json({ customerId: user.customerId });
     } catch (err) {
+        next(err);
+    }
+};
+
+exports.click = async (req, res, next) => {
+    const { email, month } = req.body;
+
+    try {
+        await Click.findOneAndUpdate(
+            { email: email, month: month },
+            { $inc: { ClickCount: 1 } },
+            { upsert: true }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        console.log(err);
         next(err);
     }
 };

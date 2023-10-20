@@ -9,6 +9,7 @@ const {
     getRefreshToken,
     getSubscription,
     getCustomer,
+    click,
 } = require('../controllers/auth');
 
 router.post('/register', register);
@@ -17,5 +18,6 @@ router.post('/logout', logout);
 router.get('/refresh-token', getRefreshToken);
 router.get('/subscription', protect, getSubscription);
 router.get('/customer', protect, getCustomer);
+router.post('/click', click);
 
 module.exports = router;
