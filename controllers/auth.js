@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Click = require('../models/click');
 const ErrorResponse = require('../utils/errorResponse');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const sendToken = (user, statusCode, res) => {
     const token = user.getSignedJwtToken(res);
@@ -112,6 +113,42 @@ exports.click = async (req, res, next) => {
             { email: email, month: month },
             { $inc: { ClickCount: 1 } },
             { upsert: true }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
+
+exports.updatePassword = async (req, res, next) => {
+    let { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+        return next(
+            new ErrorResponse('Please provide valid email and/or password', 400)
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    newPasswordHashed = await bcrypt.hash(newPassword, salt);
+
+    try {
+        //check that user already exists by email
+        const user = await User.findOne({ email }).select('+password');
+        if (!user) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        //check that password matches
+        const isMatch = await user.matchPasswords(oldPassword);
+        if (!isMatch) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        await User.findOneAndUpdate(
+            { email: email },
+            { password: newPasswordHashed }
         );
         res.status(201).json({ success: true });
     } catch (err) {
