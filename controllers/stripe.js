@@ -108,6 +108,6 @@ exports.createWebhook = async (req, res) => {
         }
     } else {
         // res.json({ received: true });
-        res.send();
+        res.send({ received: true });
     }
 };
