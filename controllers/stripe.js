@@ -82,10 +82,10 @@ exports.createWebhook = async (req, res) => {
             session.expires_at * 1000
         ).toLocaleDateString();
 
-        console.log(`Session: ${JSON.stringify(session)}`);
-        console.log(`User ID: ${user_id}`);
-        console.log(`Customer ID: ${customerId}`);
-        console.log(`Subscription: ${subscription}`);
+        // console.log(`Session: ${JSON.stringify(session)}`);
+        // console.log(`User ID: ${user_id}`);
+        // console.log(`Customer ID: ${customerId}`);
+        // console.log(`Subscription: ${subscription}`);
 
         try {
             const updatedUser = await User.updateOne(
@@ -100,12 +100,14 @@ exports.createWebhook = async (req, res) => {
                 }
             );
             console.log(`Updated User: ${JSON.stringify(updatedUser)}`);
-            res.json({ received: true });
+            // res.json({ received: true });
+            res.send();
         } catch (err) {
             // console.log(`Webhook Error: ${err.message}`);
             return res.status(500).send(`Webhook Error: ${err.message}`);
         }
     } else {
-        res.json({ received: true });
+        // res.json({ received: true });
+        res.send();
     }
 };
