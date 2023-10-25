@@ -7,6 +7,9 @@ const bcrypt = require('bcryptjs');
 const sendToken = (user, statusCode, res) => {
     const token = user.getSignedJwtToken(res);
     res.status(statusCode).json({ success: true, token });
+    // res.cookie('access_token', token.accessToken)
+    //     .status(201)
+    //     .json({ user: user });
 };
 
 exports.register = async (req, res, next) => {

@@ -8,7 +8,8 @@ const {
     createPortal,
 } = require('../controllers/stripe');
 
-router.post('/checkout', protect, createCheckout);
+// router.post('/checkout', protect, createCheckout);
+router.post('/checkout', createCheckout);
 router.post('/webhook', createWebhook);
 router.post('/portal', createPortal);
 
