@@ -67,8 +67,8 @@ app.use((req, res, next) => {
 });
 
 app.use(cookieParser());
-// app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
-// app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/openai', require('./routes/openai'));
