@@ -4,6 +4,7 @@ const DOMAIN = process.env.APPSETTING_CLIENT_URL;
 
 exports.createCheckout = async (req, res) => {
     const { priceId, sub, userID } = req.body;
+    console.log(req.body);
 
     try {
         // Log the user id here
@@ -31,7 +32,7 @@ exports.createCheckout = async (req, res) => {
         // res.status(200).json(session);
         res.redirect(303, session.url);
     } catch (err) {
-        console.log(err);
+        // console.log(err);
         res.status(500).json({ message: err.message });
     }
 };
@@ -45,7 +46,7 @@ exports.createPortal = async (req, res) => {
         });
         res.status(200).json(portalSession);
     } catch (err) {
-        console.log(err);
+        // console.log(err);
         res.status(500).json({ message: err.message });
     }
 };
@@ -101,7 +102,7 @@ exports.createWebhook = async (req, res) => {
             console.log(`Updated User: ${JSON.stringify(updatedUser)}`);
             res.json({ received: true });
         } catch (err) {
-            console.log(`Webhook Error: ${err.message}`);
+            // console.log(`Webhook Error: ${err.message}`);
             return res.status(500).send(`Webhook Error: ${err.message}`);
         }
     } else {

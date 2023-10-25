@@ -13,14 +13,6 @@ const stripe = require('stripe')(process.env.APPSETTING_STRIPE_SECRET);
 const User = require('./models/User'); // Replace with the path to your User model
 
 const app = express();
-app.use(
-    express.json({
-        limit: '5mb',
-        verify: (req, res, buf) => {
-            req.rawBody = buf.toString();
-        },
-    })
-);
 
 mongoose.set('strictQuery', true);
 mongoose.connect(
@@ -67,8 +59,8 @@ app.use((req, res, next) => {
 });
 
 app.use(cookieParser());
-// app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
-// app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/openai', require('./routes/openai'));
