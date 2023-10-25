@@ -13,6 +13,14 @@ const stripe = require('stripe')(process.env.APPSETTING_STRIPE_SECRET);
 const User = require('./models/User'); // Replace with the path to your User model
 
 const app = express();
+app.use(
+    express.json({
+        limit: '5mb',
+        verify: (req, res, buf) => {
+            req.rawBody = buf.toString();
+        },
+    })
+);
 
 mongoose.set('strictQuery', true);
 mongoose.connect(
