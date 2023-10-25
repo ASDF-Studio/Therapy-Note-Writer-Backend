@@ -77,6 +77,9 @@ exports.createWebhook = async (req, res) => {
 
         const customerId = session.customer;
         const subscription = session.subscription;
+        const nextBill = new Date(
+            session.expires_at * 1000
+        ).toLocaleDateString();
 
         console.log(`Session: ${JSON.stringify(session)}`);
         console.log(`User ID: ${user_id}`);
@@ -90,6 +93,8 @@ exports.createWebhook = async (req, res) => {
                     $set: {
                         customerId: customerId,
                         subscription: subscription,
+                        subPackage: 'BASIC',
+                        nextBill: nextBill,
                     },
                 }
             );

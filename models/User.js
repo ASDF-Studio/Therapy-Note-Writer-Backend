@@ -28,7 +28,11 @@ const UserSchema = new mongoose.Schema({
     },
     subscription: {
         type: String,
-        default: 'FREE PLAN',
+        default: '',
+    },
+    subPackage: {
+        type: String,
+        default: 'FREE',
     },
     nextBill: {
         type: String,
