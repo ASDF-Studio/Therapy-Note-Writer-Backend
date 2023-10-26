@@ -4,7 +4,6 @@ const DOMAIN = process.env.APPSETTING_CLIENT_URL;
 
 exports.createCheckout = async (req, res) => {
     const { priceId, sub, userID } = req.body;
-    console.log(req.body);
 
     try {
         // Log the user id here
