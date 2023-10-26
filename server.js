@@ -89,7 +89,7 @@ app.post(
         }
 
         // Log the entire event object
-        console.log(event);
+        // console.log(event);
 
         // Handle the event
         switch (event.type) {

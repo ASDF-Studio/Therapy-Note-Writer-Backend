@@ -26,15 +26,12 @@ exports.register = async (req, res, next) => {
         // sendToken(user, 201, res);
         res.status(201).json({ user: user });
     } catch (err) {
-        console.log(err);
         next(err);
     }
 };
 
 exports.login = async (req, res, next) => {
     const { email, password } = req.body;
-
-    console.log('Request body:', req.body); // Log the request body
 
     if (!email || !password) {
         return next(
@@ -85,7 +82,6 @@ exports.getRefreshToken = async (req, res, next) => {
             res.status(200).json(accessToken);
         }
     } catch (err) {
-        console.log('hello');
         return next(err);
     }
 };
@@ -108,6 +104,22 @@ exports.getCustomer = async (req, res, next) => {
     }
 };
 
+exports.checkSubscription = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return next(new ErrorResponse('Please provide user id', 400));
+        }
+        const user = await User.findById(id);
+        res.status(200).json({
+            nextBill: user.nextBill,
+            subPackage: user.subPackage,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 exports.click = async (req, res, next) => {
     const { email, month } = req.body;
 
@@ -119,7 +131,6 @@ exports.click = async (req, res, next) => {
         );
         res.status(201).json({ success: true });
     } catch (err) {
-        console.log(err);
         next(err);
     }
 };
@@ -155,7 +166,6 @@ exports.updatePassword = async (req, res, next) => {
         );
         res.status(201).json({ success: true });
     } catch (err) {
-        console.log(err);
         next(err);
     }
 };
