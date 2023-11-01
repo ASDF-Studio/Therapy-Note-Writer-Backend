@@ -169,3 +169,38 @@ exports.updatePassword = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.resetPassword = async (req, res, next) => {
+    let { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+        return next(
+            new ErrorResponse('Please provide valid email and/or password', 400)
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    newPasswordHashed = await bcrypt.hash(newPassword, salt);
+
+    try {
+        //check that user already exists by email
+        const user = await User.findOne({ email }).select('+password');
+        if (!user) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        //check that password matches
+        const isMatch = await user.matchPasswords(oldPassword);
+        if (!isMatch) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        await User.findOneAndUpdate(
+            { email: email },
+            { password: newPasswordHashed }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
