@@ -30,7 +30,8 @@
         "jsonwebtoken": "^9.0.0",
         "mongoose": "^6.8.2",
         "openai": "^3.2.1",
-        "stripe": "^11.18.0"
+        "stripe": "^11.18.0",
+        "twilio": "^4.19.0"
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
