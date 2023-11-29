@@ -12,8 +12,30 @@ const sendToken = (user, statusCode, res) => {
     //     .json({ user: user });
 };
 
+const generateVerificationCode = () => {
+    return Math.floor(10000 + Math.random() * 89999);
+};
+
+// exports.register = async (req, res, next) => {
+//     const { username, email, password } = req.body;
+
+//     const existing_email = await User.findOne({ email });
+
+//     if (existing_email) {
+//         return next(new ErrorResponse('Email already is in use', 400));
+//     }
+
+//     try {
+//         const user = await User.create({ username, email, password });
+//         // sendToken(user, 201, res);
+//         res.status(201).json({ user: user });
+//     } catch (err) {
+//         next(err);
+//     }
+// };
+
 exports.register = async (req, res, next) => {
-    const { username, email, password } = req.body;
+    const { email, signupMedium } = req.body;
 
     const existing_email = await User.findOne({ email });
 
@@ -21,17 +43,120 @@ exports.register = async (req, res, next) => {
         return next(new ErrorResponse('Email already is in use', 400));
     }
 
+    let otp = generateVerificationCode();
+    const currentTime = new Date();
+    const tokenExpiration = 125;
+    let otpExpire = currentTime.setSeconds(
+        currentTime.getSeconds() + tokenExpiration
+    );
+
     try {
-        const user = await User.create({ username, email, password });
+        const user = await User.create({ email, otp, otpExpire, signupMedium });
+
+        // If login from SSO
+        if (signupMedium !== 'manual') {
+            await User.findOneAndUpdate(
+                { email: email },
+                {
+                    otpVerified: true,
+                }
+            ).catch((err) => {
+                next(err);
+            });
+        }
         // sendToken(user, 201, res);
-        res.status(201).json({ user: user });
+        // res.status(201).json({ user: user });
+        res.status(201).json({ success: true, message: 'Success' });
     } catch (err) {
         next(err);
     }
 };
 
+exports.verifyOTP = async (req, res, next) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        return next(
+            new ErrorResponse('Please provide an email and/or otp', 400)
+        );
+    }
+
+    try {
+        //check that user already exists by email
+        const user = await User.findOne({ email }).select('+otp');
+        if (!user) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        //check that password matches
+        const isMatch = user.otp === otp;
+        if (!isMatch) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+        await User.findOneAndUpdate(
+            { email: email },
+            {
+                otpVerified: true,
+            }
+        );
+
+        // sendToken(user, 200, res);
+        // res.status(200).json({ user: user });
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Error during login:', err); // Log the error
+        next(err);
+    }
+};
+
+exports.updateUser = async (req, res, next) => {
+    let {
+        email,
+        password,
+        username,
+        noteTakingPreference,
+        avgNumOfSessionsPerWeek,
+        signupCompleted,
+    } = req.body;
+
+    if (!email || !password) {
+        return next(
+            new ErrorResponse('Please provide valid email and/or password', 400)
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    newPasswordHashed = await bcrypt.hash(password, salt);
+
+    try {
+        //check that user already exists by email
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        await User.findOneAndUpdate(
+            { email: email },
+            {
+                password: newPasswordHashed,
+                username: username,
+                noteTakingPreference: noteTakingPreference,
+                avgNumOfSessionsPerWeek: avgNumOfSessionsPerWeek,
+                signupCompleted: signupCompleted,
+            }
+        );
+        res.status(201).json({ success: true });
+        // res.status(201).json({ user: user });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
+
 exports.login = async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, signupMedium } = req.body;
 
     if (!email || !password) {
         return next(
@@ -50,6 +175,10 @@ exports.login = async (req, res, next) => {
         const isMatch = await user.matchPasswords(password);
         if (!isMatch) {
             return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        if (user.signupMedium !== signupMedium) {
+            return next(new ErrorResponse('No user found with this info', 400));
         }
 
         // sendToken(user, 200, res);
@@ -131,11 +260,47 @@ exports.click = async (req, res, next) => {
         );
         res.status(201).json({ success: true });
     } catch (err) {
+        console.log(err);
         next(err);
     }
 };
 
 exports.updatePassword = async (req, res, next) => {
+    let { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+        return next(
+            new ErrorResponse('Please provide valid email and/or password', 400)
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    newPasswordHashed = await bcrypt.hash(newPassword, salt);
+
+    try {
+        //check that user already exists by email
+        const user = await User.findOne({ email }).select('+password');
+        if (!user) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        //check that password matches
+        const isMatch = await user.matchPasswords(oldPassword);
+        if (!isMatch) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        await User.findOneAndUpdate(
+            { email: email },
+            { password: newPasswordHashed }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.resetPassword = async (req, res, next) => {
     let { email, oldPassword, newPassword } = req.body;
 
     if (!email || !oldPassword || !newPassword) {

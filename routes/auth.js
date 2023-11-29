@@ -12,9 +12,14 @@ const {
     click,
     updatePassword,
     checkSubscription,
+    resetPassword,
+    verifyOTP,
+    updateUser,
 } = require('../controllers/auth');
 
 router.post('/register', register);
+router.post('/verify', verifyOTP);
+router.post('/update', updateUser);
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/refresh-token', getRefreshToken);
@@ -23,5 +28,6 @@ router.get('/check-subscription/:id', checkSubscription);
 router.get('/customer', protect, getCustomer);
 router.post('/click', click);
 router.post('/updatePassword', updatePassword);
+router.post('/resetPassword', resetPassword);
 
 module.exports = router;

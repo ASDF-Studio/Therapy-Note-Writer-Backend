@@ -32,7 +32,10 @@ let rawBodySaver = function (req, res, buf, encoding) {
 
 app.use(
     cors({
-        origin: process.env.APPSETTING_CLIENT_URL, // replace with your client app URL
+        origin: [
+            process.env.APPSETTING_CLIENT_URL,
+            'https://gull-equal-slowly.ngrok-free.app',
+        ], // replace with your client app URL
         methods: ['GET', 'POST', 'OPTIONS'], // allow OPTIONS method for preflight requests
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true, // allow cookies to be sent with requests from the client
@@ -59,7 +62,9 @@ app.use((req, res, next) => {
 });
 
 app.use(cookieParser());
-app.use(bodyParser.json({ verify: rawBodySaver, extended: true }));
+app.use(
+    bodyParser.json({ verify: rawBodySaver, extended: true, limit: '10mb' })
+);
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/auth', require('./routes/auth'));
