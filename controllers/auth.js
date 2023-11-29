@@ -43,7 +43,8 @@ exports.register = async (req, res, next) => {
         return next(new ErrorResponse('Email already is in use', 400));
     }
 
-    let otp = generateVerificationCode();
+    // let otp = generateVerificationCode();
+    let otp = 11111;
     const currentTime = new Date();
     const tokenExpiration = 125;
     let otpExpire = currentTime.setSeconds(
