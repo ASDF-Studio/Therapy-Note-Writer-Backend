@@ -2,43 +2,79 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: [true, 'Please provide a username'],
+const UserSchema = new mongoose.Schema(
+    {
+        username: {
+            type: String,
+            default: null,
+        },
+        email: {
+            type: String,
+            required: [true, 'Please provide an email'],
+            unique: true,
+            match: [
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                'Please provide a valid email',
+            ],
+        },
+        password: {
+            type: String,
+            minlength: [6, 'Password must be at least 6 characters long'],
+            select: false,
+            default: null,
+        },
+        customerId: {
+            type: String,
+            default: '',
+        },
+        subscription: {
+            type: String,
+            default: '',
+        },
+        subPackage: {
+            type: String,
+            default: null, // FREE / $10 / $20
+        },
+        nextBill: {
+            type: String,
+            default: '',
+        },
+        otp: {
+            type: String,
+            default: null,
+            select: false,
+        },
+        otpExpire: {
+            type: Date,
+            default: null,
+        },
+        otpVerified: {
+            type: Boolean,
+            default: false,
+        },
+        noteTakingPreference: {
+            type: String,
+            default: null,
+        },
+        avgNumOfSessionsPerWeek: {
+            type: Number,
+            default: 0,
+        },
+        privacyPolicyAccepted: {
+            type: Boolean,
+            default: false,
+        },
+        signupCompleted: {
+            type: Boolean,
+            default: false,
+        },
+        signupMedium: {
+            type: String,
+            default: null,
+        },
     },
-    email: {
-        type: String,
-        required: [true, 'Please provide an email'],
-        unique: true,
-        match: [
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-            'Please provide a valid email',
-        ],
-    },
-    password: {
-        type: String,
-        required: [true, 'Please provide a password'],
-        minlength: [6, 'Password must be at least 6 characters long'],
-        select: false,
-    },
-    customerId: {
-        type: String,
-        default: '',
-    },
-    subscription: {
-        type: String,
-        default: '',
-    },
-    subPackage: {
-        type: String,
-        default: 'FREE',
-    },
-    nextBill: {
-        type: String,
-        default: '',
-    },
-});
+    { timestamps: true }
+);
 
 //hash password before saving to database
 UserSchema.pre('save', async function (next) {

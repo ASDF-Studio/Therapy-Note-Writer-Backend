@@ -13,9 +13,13 @@ const {
     updatePassword,
     checkSubscription,
     resetPassword,
+    verifyOTP,
+    updateUser,
 } = require('../controllers/auth');
 
 router.post('/register', register);
+router.post('/verify', verifyOTP);
+router.post('/update', updateUser);
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/refresh-token', getRefreshToken);
