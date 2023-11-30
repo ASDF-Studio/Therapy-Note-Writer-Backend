@@ -3,6 +3,7 @@ const Click = require('../models/click');
 const ErrorResponse = require('../utils/errorResponse');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { default: axios } = require('axios');
 
 const sendToken = (user, statusCode, res) => {
     const token = user.getSignedJwtToken(res);
@@ -331,6 +332,57 @@ exports.resetPassword = async (req, res, next) => {
             { password: newPasswordHashed }
         );
         res.status(201).json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getLinkedinUserEmail = async (req, res, next) => {
+    let { code, redirect_uri } = req.body;
+
+    if (!code) {
+        return next(new ErrorResponse('Please provide valid body data', 400));
+    }
+
+    try {
+        const grant_type = 'authorization_code';
+        // const redirect_uri = 'https://gull-equal-slowly.ngrok-free.app/signup';
+        const client_id = '86z5s5j7v8ljtj';
+        const client_secret = 'N7Lpk1YhmOrvaSZh';
+
+        let header = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        };
+        let url = `https://www.linkedin.com/oauth/v2/accessToken?grant_type=${grant_type}&code=${code}&client_id=${client_id}&client_secret=${client_secret}&redirect_uri=${redirect_uri}`;
+
+        // Get access token
+        axios
+            .post(url, header)
+            .then((data) => {
+                const accessToken = data.data.access_token;
+
+                let headers = {
+                    Authorization: 'Bearer ' + accessToken,
+                };
+
+                url = `https://api.linkedin.com/v2/userinfo`;
+
+                // get user info
+                axios
+                    .get(url, { headers })
+                    .then((userData) => {
+                        const email = userData.data.email;
+
+                        res.status(201).json({ success: true, email: email });
+                    })
+                    .catch((err) => {
+                        // console.log(err.response.data);
+                        next(err);
+                    });
+            })
+            .catch((err) => {
+                next(err);
+            });
     } catch (err) {
         next(err);
     }
