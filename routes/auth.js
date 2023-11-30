@@ -15,6 +15,7 @@ const {
     resetPassword,
     verifyOTP,
     updateUser,
+    getLinkedinUserEmail,
 } = require('../controllers/auth');
 
 router.post('/register', register);
@@ -29,5 +30,6 @@ router.get('/customer', protect, getCustomer);
 router.post('/click', click);
 router.post('/updatePassword', updatePassword);
 router.post('/resetPassword', resetPassword);
+router.post('/getLinkedinUserEmail', getLinkedinUserEmail);
 
 module.exports = router;
