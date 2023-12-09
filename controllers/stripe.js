@@ -3,36 +3,65 @@ const stripe = require('stripe')(process.env.APPSETTING_STRIPE_SECRET);
 const DOMAIN = process.env.APPSETTING_CLIENT_URL;
 
 exports.createCheckout = async (req, res) => {
-    const { priceId, sub, userID } = req.body;
+    const { priceId, sub, userID, clickLimit } = req.body;
 
-    try {
-        // Log the user id here
+    if (sub === 'FREE') {
+        try {
+            let today = new Date();
+            today.setMonth(today.getMonth() + 1);
+            const nextBill = today.toISOString();
 
-        // console.log(`Storing user ID in session metadata: ${req.user._id}`);
-
-        const session = await stripe.checkout.sessions.create({
-            billing_address_collection: 'auto',
-            payment_method_types: ['card'],
-            line_items: [
+            const updatedUser = await User.updateOne(
+                { _id: userID },
                 {
-                    price: priceId,
-                    quantity: 1,
+                    $set: {
+                        customerId: userID,
+                        subscription: 'free_subscription',
+                        subPackage: sub,
+                        nextBill: nextBill,
+                        clickLimit: clickLimit,
+                    },
+                }
+            );
+            res.status(200).json({
+                success: true,
+            });
+        } catch (err) {
+            // console.log(err);
+            res.status(500).json({ message: err.message });
+        }
+    } else {
+        try {
+            // Log the user id here
+
+            // console.log(`Storing user ID in session metadata: ${req.user._id}`);
+
+            const session = await stripe.checkout.sessions.create({
+                billing_address_collection: 'auto',
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price: priceId,
+                        quantity: 1,
+                    },
+                ],
+                metadata: {
+                    user_id: String(userID), // Ensuring it's a string might be helpful depending on how your ID is structured
+                    subscription: sub,
+                    clickLimit: clickLimit,
                 },
-            ],
-            metadata: {
-                user_id: String(userID), // Ensuring it's a string might be helpful depending on how your ID is structured
-                subscription: sub,
-            },
-            mode: 'subscription',
-            success_url: `${DOMAIN}/dashboard/settings?success=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${DOMAIN}/dashboard/settings?canceled=true`,
-            // automatic_tax: { enabled: true },
-        });
-        // res.status(200).json(session);
-        res.redirect(303, session.url);
-    } catch (err) {
-        // console.log(err);
-        res.status(500).json({ message: err.message });
+                mode: 'subscription',
+                success_url: `${DOMAIN}/dashboard/settings?success=true&session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${DOMAIN}/dashboard/settings?canceled=true`,
+                // automatic_tax: { enabled: true },
+            });
+            // res.status(200).json(session);
+            // res.redirect(303, session.url);
+            res.json({ success: 2, url: session.url });
+        } catch (err) {
+            // console.log(err);
+            res.status(500).json({ message: err.message });
+        }
     }
 };
 
@@ -77,11 +106,16 @@ exports.createWebhook = async (req, res) => {
 
         const customerId = session.customer;
         const subscription = session.subscription;
+        const subPackage = session.metadata.subscription;
+        const clickLimit = session.metadata.clickLimit;
         const nextBill = new Date(
             session.expires_at * 1000
         ).toLocaleDateString();
 
         // console.log(`Session: ${JSON.stringify(session)}`);
+        // console.log(`Session: ${session.amount_total}`);
+        // console.log(`Session: ${session.metadata.subscription}`);
+        // console.log(`Session: ${session.metadata.clickLimit}`);
         // console.log(`User ID: ${user_id}`);
         // console.log(`Customer ID: ${customerId}`);
         // console.log(`Subscription: ${subscription}`);
@@ -93,8 +127,9 @@ exports.createWebhook = async (req, res) => {
                     $set: {
                         customerId: customerId,
                         subscription: subscription,
-                        subPackage: 'BASIC',
+                        subPackage: subPackage,
                         nextBill: nextBill,
+                        clickLimit: clickLimit,
                     },
                 }
             );

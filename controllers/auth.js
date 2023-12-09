@@ -267,6 +267,34 @@ exports.click = async (req, res, next) => {
     }
 };
 
+exports.getClickDataofCurrentMonth = async (req, res, next) => {
+    const { email } = req.params;
+
+    if (!email) {
+        return next(new ErrorResponse('Please provide user email', 400));
+    }
+
+    const today = new Date();
+    const month = `${today.getMonth()}/${today.getFullYear()}`;
+
+    try {
+        const clicks = await Click.findOne({ email: email, month: month });
+        const user = await User.findOne({ email: email });
+
+        res.status(201).json({
+            success: true,
+            data: {
+                month: month,
+                clicks: clicks,
+                clickLimit: user.clickLimit,
+            },
+        });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
+
 exports.updatePassword = async (req, res, next) => {
     let { email, oldPassword, newPassword } = req.body;
 

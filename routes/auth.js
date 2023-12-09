@@ -16,6 +16,7 @@ const {
     verifyOTP,
     updateUser,
     getLinkedinUserEmail,
+    getClickDataofCurrentMonth,
 } = require('../controllers/auth');
 
 router.post('/register', register);
@@ -28,6 +29,7 @@ router.get('/subscription', protect, getSubscription);
 router.get('/check-subscription/:id', checkSubscription);
 router.get('/customer', protect, getCustomer);
 router.post('/click', click);
+router.get('/clickDataofCurrentMonth/:email', getClickDataofCurrentMonth);
 router.post('/updatePassword', updatePassword);
 router.post('/resetPassword', resetPassword);
 router.post('/getLinkedinUserEmail', getLinkedinUserEmail);
