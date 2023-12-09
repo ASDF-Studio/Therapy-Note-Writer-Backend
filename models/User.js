@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema(
             type: String,
             default: null, // FREE / $10 / $20
         },
+        clickLimit: {
+            type: Number,
+            default: null, // FREE / $10 / $20
+        },
         nextBill: {
             type: String,
             default: '',
