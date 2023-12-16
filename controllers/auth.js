@@ -267,6 +267,36 @@ exports.click = async (req, res, next) => {
     }
 };
 
+exports.setTermsOfService = async (req, res, next) => {
+    const { email } = req.body;
+
+    try {
+        await User.findOneAndUpdate(
+            { email: email },
+            { privacyPolicyAccepted: true }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
+
+exports.getTermsOfService = async (req, res, next) => {
+    const { email } = req.body;
+
+    try {
+        const result = await User.findOne({ email: email });
+        res.status(201).json({
+            success: true,
+            privacyPolicyAccepted: result.privacyPolicyAccepted,
+        });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
+
 exports.getClickDataofCurrentMonth = async (req, res, next) => {
     const { email } = req.params;
 
