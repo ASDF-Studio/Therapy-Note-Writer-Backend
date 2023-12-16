@@ -9,7 +9,8 @@ exports.createCheckout = async (req, res) => {
         try {
             let today = new Date();
             today.setMonth(today.getMonth() + 1);
-            const nextBill = today.toISOString();
+            // const nextBill = today.toISOString();
+            const nextBill = today.toLocaleString().split(',')[0];
 
             const updatedUser = await User.updateOne(
                 { _id: userID },
