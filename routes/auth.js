@@ -19,6 +19,8 @@ const {
     getClickDataofCurrentMonth,
     setTermsOfService,
     getTermsOfService,
+    resetPasswordFromLink,
+    generateResePasswordLink,
 } = require('../controllers/auth');
 
 router.post('/register', register);
@@ -36,6 +38,8 @@ router.post('/termsOfService', setTermsOfService);
 router.post('/getTermsOfService', getTermsOfService);
 router.post('/updatePassword', updatePassword);
 router.post('/resetPassword', resetPassword);
+router.post('/resetPasswordFromLink', resetPasswordFromLink);
+router.post('/generateResePasswordLink', generateResePasswordLink);
 router.post('/getLinkedinUserEmail', getLinkedinUserEmail);
 
 module.exports = router;

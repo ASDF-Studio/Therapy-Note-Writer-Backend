@@ -395,6 +395,74 @@ exports.resetPassword = async (req, res, next) => {
     }
 };
 
+exports.resetPasswordFromLink = async (req, res, next) => {
+    let { email, series, newPassword } = req.body;
+
+    if (!email || !series || !newPassword) {
+        return next(
+            new ErrorResponse('Please provide valid email and/or password', 400)
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    newPasswordHashed = await bcrypt.hash(newPassword, salt);
+
+    try {
+        //check that user already exists by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return next(new ErrorResponse('Invalid credentials', 401));
+        }
+
+        const currentDate = new Date();
+
+        if (user.seriesExpiryDate < currentDate) {
+            return next(new ErrorResponse('Reset link expired', 400));
+        }
+
+        if (user.series !== series) {
+            return next(
+                new ErrorResponse('Reset link expired. ErrorCode: 003', 400)
+            );
+        }
+
+        await User.findOneAndUpdate(
+            { email: email },
+            { password: newPasswordHashed }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.generateResePasswordLink = async (req, res, next) => {
+    let { email } = req.body;
+
+    if (!email) {
+        return next(new ErrorResponse('Please provide valid email ', 400));
+    }
+
+    // series is a random string works as secret key while reseting password and it's
+    // expiry date marks it's validity
+    const series = (Math.random() + 1).toString(36).substring(4);
+    const seriesExpiryDate = new Date();
+    seriesExpiryDate.setHours(seriesExpiryDate.getHours() + 24);
+
+    try {
+        await User.findOneAndUpdate(
+            { email: email },
+            {
+                series: series,
+                seriesExpiryDate: seriesExpiryDate,
+            }
+        );
+        res.status(201).json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
 exports.getLinkedinUserEmail = async (req, res, next) => {
     let { code, redirect_uri } = req.body;
 
