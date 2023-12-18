@@ -76,6 +76,14 @@ const UserSchema = new mongoose.Schema(
             type: String,
             default: null,
         },
+        series: {
+            type: String,
+            default: null,
+        },
+        seriesExpiryDate: {
+            type: String,
+            default: null,
+        },
     },
     { timestamps: true }
 );
