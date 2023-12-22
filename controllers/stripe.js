@@ -1,5 +1,8 @@
 const User = require('../models/User');
-const stripe = require('stripe')(process.env.APPSETTING_STRIPE_SECRET);
+// const stripe = require('stripe')(process.env.APPSETTING_STRIPE_SECRET);
+const stripe = require('stripe')(
+    'sk_test_51O3ZI3Hnw5201gZPMiJkT3uUJYiWttxXISxjzxe5VS4vq5FoOjULSPk06snk5G8r6eczZCB6uD3KOpG7oTpPejyX00KkmRSwH1'
+);
 const DOMAIN = process.env.APPSETTING_CLIENT_URL;
 
 exports.createCheckout = async (req, res) => {
