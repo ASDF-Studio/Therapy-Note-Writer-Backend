@@ -168,6 +168,16 @@ exports.login = async (req, res, next) => {
 
     try {
         //check that user already exists by email
+        const userCheck = await User.findOne({ email });
+        if (!userCheck) {
+            return next(
+                new ErrorResponse(
+                    'There is no user with this email. Sign up to create a user',
+                    401
+                )
+            );
+        }
+
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
             return next(new ErrorResponse('Invalid credentials', 401));
