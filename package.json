@@ -19,6 +19,7 @@
     },
     "homepage": "https://github.com/",
     "dependencies": {
+        "@sendgrid/mail": "^8.1.0",
         "@stripe/stripe-js": "^1.54.0",
         "axios": "^1.6.2",
         "bcryptjs": "^2.4.3",

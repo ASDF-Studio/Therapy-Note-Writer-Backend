@@ -21,6 +21,7 @@ const {
     getTermsOfService,
     resetPasswordFromLink,
     generateResePasswordLink,
+    getFeedback,
 } = require('../controllers/auth');
 
 router.post('/register', register);
@@ -41,5 +42,6 @@ router.post('/resetPassword', resetPassword);
 router.post('/resetPasswordFromLink', resetPasswordFromLink);
 router.post('/generateResePasswordLink', generateResePasswordLink);
 router.post('/getLinkedinUserEmail', getLinkedinUserEmail);
+router.post('/getFeedback', getFeedback);
 
 module.exports = router;

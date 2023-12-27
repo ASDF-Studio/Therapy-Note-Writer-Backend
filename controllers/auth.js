@@ -4,6 +4,8 @@ const ErrorResponse = require('../utils/errorResponse');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { default: axios } = require('axios');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendToken = (user, statusCode, res) => {
     const token = user.getSignedJwtToken(res);
@@ -44,8 +46,8 @@ exports.register = async (req, res, next) => {
         return next(new ErrorResponse('Email already is in use', 400));
     }
 
-    // let otp = generateVerificationCode();
-    let otp = 11111;
+    let otp = generateVerificationCode();
+    // let otp = 11111;
     const currentTime = new Date();
     const tokenExpiration = 125;
     let otpExpire = currentTime.setSeconds(
@@ -65,7 +67,43 @@ exports.register = async (req, res, next) => {
             ).catch((err) => {
                 next(err);
             });
+        } else {
+            // using Twilio SendGrid's v3 Node.js Library
+            // https://github.com/sendgrid/sendgrid-nodejs
+
+            const msg = {
+                to: 'kazimeraj12@gmail.com', // Change to your recipient
+                from: 'admin@therapynotewriter.com', // Change to your verified sender
+                subject: 'Verification | Therapy Note Write',
+                // text: `DO NOT SHARE THIS WITH ANYONE. Your Therapy Note OTP is ${otp}`,
+                html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                  <div style="border-bottom:1px solid #eee">
+                    <a href="" style="font-size:1.4em;color: #3052B5;text-decoration:none;font-weight:600">Therapy Note Writer</a>
+                  </div>
+                  <p style="font-size:1.1em">Hi,</p>
+                  <p>Thank you for choosing Your us. Use the following OTP to complete your Sign Up procedures. DO NOT SHARE THIS WITH ANYONE.</p>
+                  <h2 style="background: #3052B5;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${otp}</h2>
+                  <p style="font-size:0.9em;">Regards,<br />Therapy Note Writer</p>
+                  <hr style="border:none;border-top:1px solid #eee" />
+                  <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+                    <p>Therapy Note Writer</p>
+                    <p>1600 Amphitheatre Parkway</p>
+                    <p>California</p>
+                  </div>
+                </div>
+              </div>`,
+            };
+            sgMail
+                .send(msg)
+                .then(() => {
+                    console.log('Email sent');
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         }
+
         // sendToken(user, 201, res);
         // res.status(201).json({ user: user });
         res.status(201).json({ success: true, message: 'Success' });
@@ -519,6 +557,52 @@ exports.getLinkedinUserEmail = async (req, res, next) => {
             .catch((err) => {
                 next(err);
             });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getFeedback = async (req, res, next) => {
+    const { email, feedback, rating } = req.body;
+
+    try {
+        // using Twilio SendGrid's v3 Node.js Library
+        // https://github.com/sendgrid/sendgrid-nodejs
+
+        const msg = {
+            to: 'kazimeraj12@gmail.com', // Change to your recipient
+            from: 'admin@therapynotewriter.com', // Change to your verified sender
+            subject: 'User Feedback',
+            // text: `DO NOT SHARE THIS WITH ANYONE. Your Therapy Note OTP is ${otp}`,
+            html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                  <div style="border-bottom:1px solid #eee">
+                    <a href="" style="font-size:1.4em;color: #3052B5;text-decoration:none;font-weight:600">Therapy Note Writer</a>
+                  </div>
+                  <p style="font-size:1.1em">User: ${email}</p>
+                  <p>Rating: ${rating} star</p>
+                  <p>${feedback}</p>
+                  <hr style="border:none;border-top:1px solid #eee" />
+                  <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+                    <p>Therapy Note Writer</p>
+                    <p>1600 Amphitheatre Parkway</p>
+                    <p>California</p>
+                  </div>
+                </div>
+              </div>`,
+        };
+        sgMail
+            .send(msg)
+            .then(() => {
+                console.log('Email sent');
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
+        // sendToken(user, 201, res);
+        // res.status(201).json({ user: user });
+        res.status(201).json({ success: true, message: 'Success' });
     } catch (err) {
         next(err);
     }
