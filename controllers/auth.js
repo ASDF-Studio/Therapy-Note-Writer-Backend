@@ -5,7 +5,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { default: axios } = require('axios');
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+sgMail.setApiKey(
+    process.env.SENDGRID_API_KEY ||
+        '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'
+);
 
 const sendToken = (user, statusCode, res) => {
     const token = user.getSignedJwtToken(res);
