@@ -72,7 +72,7 @@ exports.register = async (req, res, next) => {
             // https://github.com/sendgrid/sendgrid-nodejs
 
             const msg = {
-                to: 'kazimeraj12@gmail.com', // Change to your recipient
+                to: email, // Change to your recipient
                 from: 'admin@therapynotewriter.com', // Change to your verified sender
                 subject: 'Verification | Therapy Note Write',
                 // text: `DO NOT SHARE THIS WITH ANYONE. Your Therapy Note OTP is ${otp}`,
