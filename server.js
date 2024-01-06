@@ -35,6 +35,7 @@ app.use(
         origin: [
             process.env.APPSETTING_CLIENT_URL,
             'https://gull-equal-slowly.ngrok-free.app',
+            'https://therapynotewriter.com',
         ], // replace with your client app URL
         methods: ['GET', 'POST', 'OPTIONS'], // allow OPTIONS method for preflight requests
         allowedHeaders: ['Content-Type', 'Authorization'],
