@@ -77,7 +77,7 @@ exports.register = async (req, res, next) => {
             const msg = {
                 to: email, // Change to your recipient
                 from: 'admin@therapynotewriter.com', // Change to your verified sender
-                subject: 'Verification | Therapy Note Write',
+                subject: 'Verification | Therapy Note Writer',
                 // text: `DO NOT SHARE THIS WITH ANYONE. Your Therapy Note OTP is ${otp}`,
                 html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
                 <div style="margin:50px auto;width:70%;padding:20px 0">
@@ -446,6 +446,71 @@ exports.resetPassword = async (req, res, next) => {
     }
 };
 
+exports.generateResePasswordLink = async (req, res, next) => {
+    let { email } = req.body;
+
+    if (!email) {
+        return next(new ErrorResponse('Please provide valid email ', 400));
+    }
+    console.log('email', email);
+
+    // series is a random string works as secret key while reseting password and it's
+    // expiry date marks it's validity
+    const series = (Math.random() + 1).toString(36).substring(4);
+    const seriesExpiryDate = new Date();
+    seriesExpiryDate.setHours(seriesExpiryDate.getHours() + 24);
+    const resetLink = `https://therapynotewriter.com/reset/pass?series=${series}&&identity=${email}`;
+
+    try {
+        await User.findOneAndUpdate(
+            { email: email },
+            {
+                series: series,
+                seriesExpiryDate: seriesExpiryDate,
+            }
+        );
+
+        // using Twilio SendGrid's v3 Node.js Library
+        // https://github.com/sendgrid/sendgrid-nodejs
+
+        const msg = {
+            to: email, // Change to your recipient
+            from: 'admin@therapynotewriter.com', // Change to your verified sender
+            subject: 'Reset Password | CONFIDENTIAL | Therapy Note Writer',
+            // text: `DO NOT SHARE THIS WITH ANYONE. Your Therapy Note OTP is ${otp}`,
+            html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                  <div style="border-bottom:1px solid #eee">
+                    <a href="" style="font-size:1.4em;color: #3052B5;text-decoration:none;font-weight:600">Therapy Note Writer</a>
+                  </div>
+                  <p style="font-size:1.1em">Hi,</p>
+                  <p>Click on the following link to reset your password. DO NOT SHARE THIS WITH ANYONE.</p>
+                  <a href=${resetLink} style="margin: 0 auto;width: max-content;padding: 0 10px;border-radius: 4px;">${resetLink}</a>
+                  <p style="font-size:0.9em;">Regards,<br />Therapy Note Writer</p>
+                  <hr style="border:none;border-top:1px solid #eee" />
+                  <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+                    <p>Therapy Note Writer</p>
+                    <p>1600 Amphitheatre Parkway</p>
+                    <p>California</p>
+                  </div>
+                </div>
+              </div>`,
+        };
+
+        sgMail
+            .send(msg)
+            .then(() => {
+                console.log('Email sent');
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        res.status(201).json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
 exports.resetPasswordFromLink = async (req, res, next) => {
     let { email, series, newPassword } = req.body;
 
@@ -480,33 +545,6 @@ exports.resetPasswordFromLink = async (req, res, next) => {
         await User.findOneAndUpdate(
             { email: email },
             { password: newPasswordHashed }
-        );
-        res.status(201).json({ success: true });
-    } catch (err) {
-        next(err);
-    }
-};
-
-exports.generateResePasswordLink = async (req, res, next) => {
-    let { email } = req.body;
-
-    if (!email) {
-        return next(new ErrorResponse('Please provide valid email ', 400));
-    }
-
-    // series is a random string works as secret key while reseting password and it's
-    // expiry date marks it's validity
-    const series = (Math.random() + 1).toString(36).substring(4);
-    const seriesExpiryDate = new Date();
-    seriesExpiryDate.setHours(seriesExpiryDate.getHours() + 24);
-
-    try {
-        await User.findOneAndUpdate(
-            { email: email },
-            {
-                series: series,
-                seriesExpiryDate: seriesExpiryDate,
-            }
         );
         res.status(201).json({ success: true });
     } catch (err) {
