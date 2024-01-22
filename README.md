@@ -1,3 +1,4 @@
-# UdemySaaSPublic
- Public repo of Udemy Saas AI Course
-# TNW
+# Therapy Note Writer Backend
+
+First run: "npm install" to install dependencies
+To launch server, run: "npm start" from terminal
