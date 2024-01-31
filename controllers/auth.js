@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { default: axios } = require('axios');
 const sgMail = require('@sendgrid/mail');
+const Feedback = require('../models/feedback');
+const Contact = require('../models/contact');
 sgMail.setApiKey(
     process.env.SENDGRID_API_KEY ||
         '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'
@@ -640,6 +642,57 @@ exports.getFeedback = async (req, res, next) => {
             .catch((error) => {
                 console.error(error);
             });
+
+        await Feedback.create({ email, feedback, rating });
+
+        // sendToken(user, 201, res);
+        // res.status(201).json({ user: user });
+        res.status(201).json({ success: true, message: 'Success' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.contact = async (req, res, next) => {
+    const { email, name, phone, message } = req.body;
+
+    try {
+        // using Twilio SendGrid's v3 Node.js Library
+        // https://github.com/sendgrid/sendgrid-nodejs
+
+        const msg = {
+            to: 'admin@therapynotewriter.com', // Change to your recipient
+            from: 'admin@therapynotewriter.com', // Change to your verified sender
+            subject: 'Contact Form',
+
+            html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                <div style="margin:50px auto;width:70%;padding:20px 0">
+                  <div style="border-bottom:1px solid #eee">
+                    <a href="" style="font-size:1.4em;color: #3052B5;text-decoration:none;font-weight:600">Therapy Note Writer</a>
+                  </div>
+                  <p style="font-size:1.1em">Email: ${email}</p>
+                  <p style="font-size:1.1em">Name: ${name}</p>
+                  <p>Phone: ${phone} </p>
+                  <p>${message}</p>
+                  <hr style="border:none;border-top:1px solid #eee" />
+                  <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+                    <p>Therapy Note Writer</p>
+                    <p>1600 Amphitheatre Parkway</p>
+                    <p>California</p>
+                  </div>
+                </div>
+              </div>`,
+        };
+        sgMail
+            .send(msg)
+            .then(() => {
+                console.log('Email sent');
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
+        await Contact.create({ email, name, phone, message });
 
         // sendToken(user, 201, res);
         // res.status(201).json({ user: user });
